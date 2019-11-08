@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title> apply interpolated transform on multiple keyframes</title>
+<link rel="help" href="https://drafts.csswg.org/web-animations/#keyframes-section">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="../../testcommon.js"></script>
+<body>
+<div id="log"></div>
+<div id="target"></div>
+<script>
+'use strict';
+
+test(t => {
+  const div = createDiv(t);
+  const keyframe1 = [
+      {"transform":"translateX( 200px ) rotate( 360deg )"},
+      {"transform":"translateX( 100% ) scale( 1 )"},
+    ];
+  const keyframe2 = [
+      {"transform":"translateX( 200px ) rotate( 360deg )"},
+      {"transform":"translateX( 100% ) scale( 1 )"},
+      {"transform":"none"},
+      {}
+    ];
+
+  const animation1 = div.animate(keyframe1, {
+                            "duration":3000,
+                            "easing":"cubic-bezier(0,1,0,-1)"
+    });
+  const animation2 = div.animate(keyframe2, {
+                            "duration":3000,
+                            "easing":"cubic-bezier(0,3,0,-3)"
+    });
+  animation2.pause();
+  animation1.pause();
+
+  // At t=0.1, the y position should be close to zero
+  animation2.currentTime = 100;
+  assert_approx_equals(parseFloat(getComputedStyle(div)['transform'].split(',')[4]), 40, 1);
+  // At t=0.5, the y position should be positive
+  animation2.currentTime = 500;
+  assert_approx_equals(parseFloat(getComputedStyle(div)['transform'].split(',')[4]), 100, 1);
+ // At t=1.5, the y position should be negative
+  animation2.currentTime = 1500;
+  assert_approx_equals(parseFloat(getComputedStyle(div)['transform'].split(',')[4]), -440, 1);
+
+})
+</script>
+</body>
